@@ -1,0 +1,32 @@
+  vars_files:
+    vars.yml
+  tasks:
+    - name: 웹서버 설치
+      yum:
+        name: httpd
+        state: present
+
+    - name: 포트변경
+      lineinfile:
+        dest: /etc/httpd/conf/httpd.conf
+        regexp: '^Listen [0-9]{1,5}$'
+        line: Listen {{ webport }}
+      notify:
+        - restartweb
+    - name: index.html making
+      file:
+       path: /var/www/index.html
+       state: touch
+
+    - name: index.html 에 내용 추가
+      blockinfile:
+        dest: /var/www/index.html
+        block: |
+           [test page]
+           - hi
+           - hello
+  handlers:
+    - name: restartweb
+      service:
+        name: httpd
+        state: restarted
